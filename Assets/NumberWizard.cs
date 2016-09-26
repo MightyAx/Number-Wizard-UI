@@ -1,20 +1,38 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 
 public class NumberWizard : MonoBehaviour
 {
 	const int MinNumber = 1;
 	const int MaxNumber = 1000000;
-	const string SuccessMessage = "I guessed correctly, in {0:#,#} guesses!";
-	const string CheatMessage = "I spent {0:#,#} turns guessing but I think you're cheating, please play fair!";
 
 	int sessionMin, sessionMax, sessionGuess, sessionScore;
-	bool sessionInPlay;
 
+	public Text score;
+	public Text guess;
+	
+	public void GuessHigher ()
+	{
+		if (sessionGuess == sessionMin && sessionGuess == sessionMax) {
+			Application.LoadLevel ("Cheat");
+		} else {
+			SetMin ();
+		}
+	}
+	
+	public void GuessLower ()
+	{
+		if (sessionGuess == sessionMin && sessionGuess == sessionMax) {
+			Application.LoadLevel ("Cheat");
+		} else {
+			SetMax ();
+		}
+	}
+	
 	// Use this for initialization
 	void Start ()
 	{
-		print ("Welcome to Number Wizard");
 		StartGame ();
 	}
 
@@ -23,37 +41,15 @@ public class NumberWizard : MonoBehaviour
 		sessionMin = MinNumber;
 		sessionMax = MaxNumber;
 		sessionScore = 0;
-		sessionInPlay = true;
-		print ("==============================================");
-		print (string.Format ("Pick a number between {0:#,#} and {1:#,#}. Don't tell me what it is. I'm going to guess!", MinNumber, MaxNumber));
-		UpdateGuess ();
+		NextGuess ();
 	}
 
-	void UpdateGuess ()
+	void NextGuess ()
 	{
 		sessionScore++;
+		score.text = sessionScore.ToString ("#,#");
 		sessionGuess = Random.Range (sessionMin, sessionMax + 1);
-		print (string.Format ("Is it Higher, Lower or Equal to: {0:#,#}?", sessionGuess));
-		print ("Higher (Up Arrow), Lower (Down Arrow) or Equal (Return)");
-	}
-
-	void ProcessInput ()
-	{
-		if (sessionGuess == sessionMin && sessionGuess == sessionMax)
-		{
-			End (CheatMessage);
-		}
-		else
-		{
-			if (Input.GetKeyDown (KeyCode.UpArrow))
-			{
-				SetMin ();
-			}
-			else if (Input.GetKeyDown (KeyCode.DownArrow))
-			{
-				SetMax ();
-			}
-		}
+		guess.text = sessionGuess.ToString ("#,#");
 	}
 
 	void SetMin ()
@@ -61,12 +57,12 @@ public class NumberWizard : MonoBehaviour
 		int newMin = sessionGuess + 1;
 		if (newMin > sessionMax)
 		{
-			End (CheatMessage);
+			Application.LoadLevel ("Cheat");
 		}
 		else
 		{
 			sessionMin = newMin;
-			UpdateGuess ();
+			NextGuess ();
 		}	
 	}
 
@@ -75,40 +71,12 @@ public class NumberWizard : MonoBehaviour
 		int newMax = sessionGuess - 1;
 		if (newMax < sessionMin)
 		{
-			End (CheatMessage);
+			Application.LoadLevel ("Cheat");
 		}
 		else
 		{
 			sessionMax = newMax;
-			UpdateGuess ();
+			NextGuess ();
 		}
 	}
-	
-	void End (string scoreMessage)
-	{
-		print (string.Format (scoreMessage, sessionScore));
-		print ("Press any key to play again.");
-		sessionInPlay = false;
-	}
-
-	// Update is called once per frame
-	void Update ()
-	{
-		if (sessionInPlay)
-		{
-			if (Input.GetKeyDown (KeyCode.Return))
-			{
-				End (SuccessMessage);
-			}
-			else if (Input.GetKeyDown (KeyCode.UpArrow) || Input.GetKeyDown (KeyCode.DownArrow))
-			{
-				ProcessInput ();
-			}
-		}
-		else if (Input.anyKeyDown)
-		{
-			StartGame ();
-		}
-	}
-
 }
